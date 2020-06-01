@@ -1,1 +1,2 @@
-# openfin-java-gateway-examples
+# OpenFin Java Gateway Examples
+
