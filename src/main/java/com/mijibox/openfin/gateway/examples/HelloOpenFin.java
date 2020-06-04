@@ -32,17 +32,18 @@ public class HelloOpenFin {
 		};
 
 		OpenFinLauncher.newOpenFinLauncherBuilder()
+				.addRuntimeOption("--v=1")
 				.addRuntimeOption("--no-sandbox")
 				.open(gatewayListener)
 				.thenAccept(gateway -> {
 					gateway.invoke("fin.System.getVersion").thenAccept(r -> {
-						System.out.println("openfin version: {}" + r.getResult());
+						System.out.println("openfin version: " + r.getResultAsString());
 					});
 
 					gateway.invoke(true, "fin.Application.startFromManifest",
 							Json.createValue("https://cdn.openfin.co/demos/hello/app.json")).thenAccept(r -> {
-								JsonObject appObj = (JsonObject) r.getResult();
-								System.out.println("appUuid: {}" + appObj.getJsonObject("identity").getString("uuid"));
+								JsonObject appObj = r.getResultAsJsonObject();
+								System.out.println("appUuid: " + appObj.getJsonObject("identity").getString("uuid"));
 								ProxyObject proxyAppObj = r.getProxyObject();
 								proxyAppObj.addListener("on", "closed", (e) -> {
 									System.out.println("hello openfin closed, listener got event: " + e);
