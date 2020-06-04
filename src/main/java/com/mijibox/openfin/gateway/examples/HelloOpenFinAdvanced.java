@@ -79,7 +79,7 @@ public class HelloOpenFinAdvanced {
 		public static CompletionStage<OfApplication> startFromManifestAsync(String manifest, OpenFinGateway gateway) {
 			return gateway.invoke(true, "fin.Application.startFromManifest", Json.createValue(manifest))
 					.thenApply(r -> {
-						JsonObject appId = ((JsonObject)r.getResult()).getJsonObject("identity");
+						JsonObject appId = r.getResultAsJsonObject().getJsonObject("identity");
 						return new OfApplication(appId, r.getProxyObject(), gateway);
 					});
 		}
@@ -94,7 +94,7 @@ public class HelloOpenFinAdvanced {
 
 		public CompletionStage<OfWindow> getWindowAsync() {
 			return this.pxyObj.invoke(true, "getWindow").thenApply(r -> {
-				JsonObject winId = ((JsonObject)r.getResult()).getJsonObject("identity");
+				JsonObject winId = r.getResultAsJsonObject().getJsonObject("identity");
 				return new OfWindow(winId, r.getProxyObject(), gateway);
 			});
 		}
@@ -108,7 +108,7 @@ public class HelloOpenFinAdvanced {
 
 		public CompletionStage<JsonObject> getInfoAsync() {
 			return this.pxyObj.invoke("getInfo").thenApply(r -> {
-				return (JsonObject) r.getResult();
+				return r.getResultAsJsonObject();
 			});
 		}
 		
@@ -118,7 +118,7 @@ public class HelloOpenFinAdvanced {
 		
 		public CompletionStage<List<OfWindow>> getChildWindowsAsync() {
 			return this.pxyObj.invoke("getChildWindows").thenApply(r->{
-				return (JsonArray)r.getResult();
+				return r.getResultAsJsonArray();
 			}).thenApply(wins ->{
 				ArrayList<OfWindow> windows = new ArrayList<>();
 				wins.forEach(w ->{
