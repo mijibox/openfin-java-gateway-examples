@@ -13,6 +13,7 @@ import javax.json.JsonObject;
 import com.mijibox.openfin.gateway.OpenFinEventListener;
 import com.mijibox.openfin.gateway.OpenFinGateway;
 import com.mijibox.openfin.gateway.OpenFinGateway.OpenFinGatewayListener;
+import com.mijibox.openfin.gateway.OpenFinGatewayLauncher;
 import com.mijibox.openfin.gateway.OpenFinIabMessageListener;
 import com.mijibox.openfin.gateway.OpenFinLauncher;
 import com.mijibox.openfin.gateway.ProxyListener;
@@ -184,16 +185,20 @@ public class HelloOpenFinAdvanced {
 
 	void demo() {
 		Thread thread = Thread.currentThread();
-		OpenFinGatewayListener listner = new OpenFinGateway.OpenFinGatewayListener() {
+		OpenFinGatewayListener listener = new OpenFinGateway.OpenFinGatewayListener() {
 			@Override
 			public void onClose() {
 				LockSupport.unpark(thread);
 			}
 		};
 
-		OpenFinLauncher.newOpenFinLauncherBuilder()
-				.addRuntimeOption("--v=1")
-				.open(listner).thenAccept(gateway -> {
+		OpenFinGatewayLauncher.newOpenFinGatewayLauncher()
+				.launcherBuilder(OpenFinLauncher.newOpenFinLauncherBuilder()
+						.runtimeVersion("beta")
+						.addRuntimeOption("--v=1"))
+				.gatewayListener(listener)
+				.open()
+				.thenAccept(gateway -> {
 					OfApplication helloApp = OfApplication
 							.startFromManifest("https://cdn.openfin.co/demos/hello/app.json", gateway);
 					
@@ -206,6 +211,7 @@ public class HelloOpenFinAdvanced {
 						flashWindow.set(false);
 						helloApp.dispose();
 						gateway.close();
+						return null;
 					});
 
 					// flash window every 10 seconds
@@ -213,13 +219,13 @@ public class HelloOpenFinAdvanced {
 						@Override
 						public void run() {
 							while (flashWindow.get()) {
-								helloWindow.flash();
 								try {
 									Thread.sleep(10000);
 								}
 								catch (InterruptedException e) {
 									e.printStackTrace();
 								}
+								helloWindow.flash();
 							}
 						}
 					};
@@ -241,6 +247,7 @@ public class HelloOpenFinAdvanced {
 							System.out.println("interAppWindow shown, subscribe to IAB topic AAA");
 							gateway.getOpenFinInterApplicationBus().subscribe(null, "AAA", iabListener);
 						}
+						return null;
 					});
 
 					// if iab window is hidden, remove iab listener, also remove the window-shown
@@ -254,6 +261,7 @@ public class HelloOpenFinAdvanced {
 									"no longer care about window-shown events, remove appWindowShownListener");
 							helloApp.removeListener("window-shown", appWindowShownListener);
 						}
+						return null;
 					});
 				});
 

@@ -20,6 +20,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 import com.mijibox.openfin.gateway.OpenFinGateway;
+import com.mijibox.openfin.gateway.OpenFinGatewayLauncher;
 import com.mijibox.openfin.gateway.OpenFinGateway.OpenFinGatewayListener;
 import com.mijibox.openfin.gateway.OpenFinLauncher;
 import com.mijibox.openfin.gateway.ProxyObject;
@@ -32,10 +33,12 @@ public class PlatformAPI implements OpenFinGatewayListener {
 
 	PlatformAPI() {
 		this.createGui();
-		OpenFinLauncher.newOpenFinLauncherBuilder()
-				.runtimeVersion("16.83.50.9")
-				.addRuntimeOption("--v=1")
-				.open(this);
+		OpenFinGatewayLauncher.newOpenFinGatewayLauncher()
+				.launcherBuilder(OpenFinLauncher.newOpenFinLauncherBuilder()
+						.runtimeVersion("16.83.50.9")
+						.addRuntimeOption("--v=1"))
+				.gatewayListener(this)
+				.open();
 	}
 
 	void createGui() {
@@ -111,10 +114,11 @@ public class PlatformAPI implements OpenFinGatewayListener {
 				platformObjFuture = this.gateway
 						.invoke(true, "fin.Platform.start",
 								Json.createObjectBuilder().add("uuid", UUID.randomUUID().toString()).build())
-						.thenApply(r->{
+						.thenApply(r -> {
 							this.platformObj = r.getProxyObject();
-							this.platformObj.addListener("on", "closed", e->{
+							this.platformObj.addListener("on", "closed", e -> {
 								this.platformObj = null;
+								return null;
 							});
 							return this.platformObj;
 						}).toCompletableFuture();

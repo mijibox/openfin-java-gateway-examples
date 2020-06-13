@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.mijibox.openfin.gateway.OpenFinGateway;
 import com.mijibox.openfin.gateway.OpenFinGateway.OpenFinGatewayListener;
+import com.mijibox.openfin.gateway.OpenFinGatewayLauncher;
 import com.mijibox.openfin.gateway.OpenFinInterApplicationBus;
 import com.mijibox.openfin.gateway.OpenFinLauncher;
 
@@ -28,10 +29,12 @@ public class HelloOpenFinIAB implements OpenFinGatewayListener {
 				.add("uuid", "OpenFinHelloWorld")
 				.add("name", "OpenFinHelloWorld").build();
 		// intentionally using different version of openfin runtime.
-		OpenFinLauncher.newOpenFinLauncherBuilder()
-				.runtimeVersion("10.66.41.18")
-				.addRuntimeOption("--v=1")
-				.open(this);
+		OpenFinGatewayLauncher.newOpenFinGatewayLauncher()
+				.launcherBuilder(OpenFinLauncher.newOpenFinLauncherBuilder()
+						.runtimeVersion("10.66.41.18")
+						.addRuntimeOption("--v=1"))
+				.gatewayListener(this)
+				.open();
 	}
 
 	void sendMessages() {
@@ -71,12 +74,12 @@ public class HelloOpenFinIAB implements OpenFinGatewayListener {
 			logger.info("received iab message from {}, msg: {}", src, msg);
 			iab.send(helloOpenFinIdentity, "hello:of:notification", msg);
 		});
-		
+
 		this.iab.subscribe(null, "AAA", (src, msg) -> {
 			logger.info("received iab message from {}, msg: {}", src, msg);
 			iab.send(helloOpenFinIdentity, "hello:of:notification", msg);
 		});
-		
+
 		this.sendMessages();
 	}
 

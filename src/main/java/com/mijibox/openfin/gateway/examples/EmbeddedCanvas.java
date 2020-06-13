@@ -21,7 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import com.mijibox.openfin.gateway.OpenFinGateway;
-import com.mijibox.openfin.gateway.OpenFinLauncher;
+import com.mijibox.openfin.gateway.OpenFinGatewayLauncher;
 import com.mijibox.openfin.gateway.ProxyObject;
 import com.mijibox.openfin.gateway.gui.OpenFinCanvas;
 
@@ -149,7 +149,9 @@ public class EmbeddedCanvas {
 
 	public static void main(String[] args) {
 		try {
-			new EmbeddedCanvas(OpenFinLauncher.newOpenFinLauncherBuilder().open(null).toCompletableFuture().get());
+			new EmbeddedCanvas(OpenFinGatewayLauncher
+					.newOpenFinGatewayLauncher()
+					.open().toCompletableFuture().get());
 		}
 		catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();

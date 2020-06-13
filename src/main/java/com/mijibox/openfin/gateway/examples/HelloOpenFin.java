@@ -8,6 +8,7 @@ import javax.json.JsonObject;
 
 import com.mijibox.openfin.gateway.OpenFinGateway;
 import com.mijibox.openfin.gateway.OpenFinGateway.OpenFinGatewayListener;
+import com.mijibox.openfin.gateway.OpenFinGatewayLauncher;
 import com.mijibox.openfin.gateway.OpenFinLauncher;
 import com.mijibox.openfin.gateway.ProxyObject;
 
@@ -31,10 +32,12 @@ public class HelloOpenFin {
 			}
 		};
 
-		OpenFinLauncher.newOpenFinLauncherBuilder()
-				.addRuntimeOption("--v=1")
-				.addRuntimeOption("--no-sandbox")
-				.open(gatewayListener)
+		OpenFinGatewayLauncher.newOpenFinGatewayLauncher()
+				.launcherBuilder(OpenFinLauncher.newOpenFinLauncherBuilder()
+						.addRuntimeOption("--v=1")
+						.addRuntimeOption("--no-sandbox"))
+				.gatewayListener(gatewayListener)
+				.open()
 				.thenAccept(gateway -> {
 					gateway.invoke("fin.System.getVersion").thenAccept(r -> {
 						System.out.println("openfin version: " + r.getResultAsString());
@@ -48,15 +51,21 @@ public class HelloOpenFin {
 								proxyAppObj.addListener("on", "closed", (e) -> {
 									System.out.println("hello openfin closed, listener got event: " + e);
 									gateway.close();
+									return null;
 								});
-							}).exceptionally(e -> {
+							})
+							.exceptionally(e -> {
 								System.err.println("error starting hello openfin app");
 								e.printStackTrace();
 								gateway.close();
 								return null;
 							});
+				})
+				.exceptionally(e -> {
+					e.printStackTrace();
+					return null;
 				});
-		
+
 		return gatewayClosedFuture;
 	}
 
